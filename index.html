@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wallpaper Gallery by Scientificirfan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      width: 70%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1.5px solid #aaa;
+      border-radius: 5px 0 0 5px;
+      outline: none;
+    }
+    button.search-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: 1.5px solid #007bff;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      border-radius: 0 5px 5px 0;
+      transition: background-color 0.3s ease;
+    }
+    button.search-btn:hover {
+      background-color: #0056b3;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+    .wallpaper {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease;
+    }
+    .wallpaper:hover {
+      transform: scale(1.03);
+    }
+    .wallpaper img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+    .actions {
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .actions a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+    .actions a.download-btn {
+      background-color: #28a745;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 5px;
+      font-weight: normal;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+    .actions a.download-btn:hover {
+      background-color: #1e7e34;
+    }
+    .fav-btn {
+      font-size: 24px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease;
+    }
+    .fav-btn:hover {
+      transform: scale(1.3);
+    }
+    .favorited {
+      color: red;
+    }
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🌄 Wallpaper Gallery</h1>
+
+<form id="searchForm">
+  <input type="text" id="searchInput" placeholder="Search wallpapers..." autocomplete="off" />
+  <button class="search-btn" type="submit">Search</button>
+</form>
+
+<div class="gallery" id="gallery">
+  <!-- Wallpapers will appear here -->
+</div>
+
+<footer>
+  © 2025 Scientificirfan — All rights reserved.
+</footer>
+
+<script>
+  // Wallpapers data: [image URL, search keyword]
+  const wallpapers = [
+    ["https://images.unsplash.com/photo-1501785888041-af3ef285b470", "mountain 4k wallpaper"],
+    ["https://images.unsplash.com/photo-1587614382346-ac7b478d1f8a", "space 4k wallpaper"],
+    ["https://images.unsplash.com/photo-1500530855697-b586d89ba3ee", "forest 4k wallpaper"],
+    ["https://images.unsplash.com/photo-1615553966480-d4de679b50a2", "anime 4k wallpaper"],
+    ["https://images.unsplash.com/photo-1504384308090-c894fdcc538d", "city night 4k wallpaper"]
+  ];
+
+  const gallery = document.getElementById("gallery");
+
+  // Helper: check if wallpaper URL is favorited in localStorage
+  function isFavorited(url) {
+    const favs = JSON.parse(localStorage.getItem("favWallpapers") || "[]");
+    return favs.includes(url);
+  }
+
+  // Helper: toggle favorite in localStorage and update UI
+  function toggleFavorite(url, btn) {
+    let favs = JSON.parse(localStorage.getItem("favWallpapers") || "[]");
+    if (favs.includes(url)) {
+      favs = favs.filter(u => u !== url);
+      btn.classList.remove("favorited");
+    } else {
+      favs.push(url);
+      btn.classList.add("favorited");
+    }
+    localStorage.setItem("favWallpapers", JSON.stringify(favs));
+  }
+
+  function createWallpaperCard(url, keyword) {
+    const card = document.createElement("div");
+    card.className = "wallpaper";
+
+    // Image wrapped with link to google image search for similar images
+    const link = document.createElement("a");
+    link.href = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(keyword)}`;
+    link.target = "_blank";
+    const img = document.createElement("img");
+    img.src = url + "?auto=format&fit=crop&w=800&q=80";
+    img.alt = keyword;
+    link.appendChild(img);
+    card.appendChild(link);
+
+    // Actions container
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    // Similar images link
+    const searchLink = document.createElement("a");
+    searchLink.href = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(keyword)}`;
+    searchLink.target = "_blank";
+    searchLink.textContent = "Similar Images";
+    actions.appendChild(searchLink);
+
+    // Download button (direct image download)
+    const downloadLink = document.createElement("a");
+    downloadLink.href = url + "?auto=format&fit=crop&w=1920&q=90";
+    downloadLink.download = keyword.replace(/\s+/g, "_") + ".jpg";
+    downloadLink.className = "download-btn";
+    downloadLink.textContent = "Download";
+    actions.appendChild(downloadLink);
+
+    // Favorite toggle button (heart)
+    const favBtn = document.createElement("span");
+    favBtn.className = "fav-btn";
+    favBtn.setAttribute("role", "button");
+    favBtn.setAttribute("aria-label", "Toggle favorite");
+    favBtn.tabIndex = 0;
+    favBtn.innerHTML = isFavorited(url) ? "❤️" : "🤍";
+    if (isFavorited(url)) {
+      favBtn.classList.add("favorited");
+    }
+
+    favBtn.onclick = () => {
+      toggleFavorite(url, favBtn);
+      favBtn.innerHTML = favBtn.classList.contains("favorited") ? "❤️" : "🤍";
+    };
+    favBtn.onkeypress = (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        favBtn.click();
+      }
+    };
+    actions.appendChild(favBtn);
+
+    card.appendChild(actions);
+
+    return card;
+  }
+
+  // Render all wallpapers initially
+  function renderWallpapers(list) {
+    gallery.innerHTML = "";
+    list.forEach(([url, keyword]) => {
+      gallery.appendChild(createWallpaperCard(url, keyword));
+    });
+  }
+
+  renderWallpapers(wallpapers);
+
+  // Search form behavior: open Google Images search for query in new tab
+  document.getElementById("searchForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const query = document.getElementById("searchInput").value.trim();
+    if (query) {
+      window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`, "_blank");
+    }
+  });
+</script>
+
+</body>
+</html>
