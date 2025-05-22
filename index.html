@@ -120,6 +120,8 @@
   <input type="text" id="searchInput" placeholder="Search wallpapers..." autocomplete="off" />
   <button class="search-btn" type="submit">Search</button>
 </form>
+<button id="viewFavs" class="search-btn" style="margin-top:10px;">❤️ View Favorites</button>
+<button id="showAll" class="search-btn" style="margin-top:10px; display:none;">Show All</button>
 
 <div class="gallery" id="gallery">
   <!-- Wallpapers will appear here -->
@@ -130,24 +132,53 @@
 </footer>
 
 <script>
-  // Wallpapers data: [image URL, search keyword]
-  const wallpapers = [
-    ["https://images.unsplash.com/photo-1501785888041-af3ef285b470", "mountain 4k wallpaper"],
-    ["https://images.unsplash.com/photo-1587614382346-ac7b478d1f8a", "space 4k wallpaper"],
-    ["https://images.unsplash.com/photo-1500530855697-b586d89ba3ee", "forest 4k wallpaper"],
-    ["https://images.unsplash.com/photo-1615553966480-d4de679b50a2", "anime 4k wallpaper"],
-    ["https://images.unsplash.com/photo-1504384308090-c894fdcc538d", "city night 4k wallpaper"]
-  ];
+ const wallpapers = [
+  ["https://images.unsplash.com/photo-1501785888041-af3ef285b470", "mountain 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1587614382346-ac7b478d1f8a", "space 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1500530855697-b586d89ba3ee", "forest 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1615553966480-d4de679b50a2", "anime 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1504384308090-c894fdcc538d", "city night 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "desert 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101178521-c1a9136a3b99", "beach 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "river 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "sunset 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "nature 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1519125323398-675f0ddb6308", "mountain lake wallpaper"],
+  ["https://images.unsplash.com/photo-1469474968028-56623f02e42e", "snow 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1506744038136-46273834b3fb", "autumn forest wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "canyon 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "valley 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "clouds 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "night sky wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "mountain sunrise wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "ocean 4k wallpaper"],
+  ["https://images.unsplash.com/photo-1465101046530-73398c7f28ca", "rainforest 4k wallpaper"]
+];
 
   const gallery = document.getElementById("gallery");
+  const searchInput = document.getElementById("searchInput");
+  const showAllBtn = document.getElementById("showAll");
+  const viewFavsBtn = document.getElementById("viewFavs");
 
-  // Helper: check if wallpaper URL is favorited in localStorage
+  // Shuffle wallpapers on each refresh
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+  shuffle(wallpapers);
+
+  const lastSearch = localStorage.getItem("lastSearch");
+  if (lastSearch) {
+    searchInput.value = lastSearch;
+  }
+
   function isFavorited(url) {
     const favs = JSON.parse(localStorage.getItem("favWallpapers") || "[]");
     return favs.includes(url);
   }
 
-  // Helper: toggle favorite in localStorage and update UI
   function toggleFavorite(url, btn) {
     let favs = JSON.parse(localStorage.getItem("favWallpapers") || "[]");
     if (favs.includes(url)) {
@@ -164,7 +195,6 @@
     const card = document.createElement("div");
     card.className = "wallpaper";
 
-    // Image wrapped with link to google image search for similar images
     const link = document.createElement("a");
     link.href = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(keyword)}`;
     link.target = "_blank";
@@ -174,18 +204,27 @@
     link.appendChild(img);
     card.appendChild(link);
 
-    // Actions container
     const actions = document.createElement("div");
     actions.className = "actions";
 
-    // Similar images link
+    const deepAILink = document.createElement("a");
+    deepAILink.href = `https://deepai.org/machine-learning-model/text2img?text=${encodeURIComponent(keyword)}`;
+    deepAILink.target = "_blank";
+    deepAILink.textContent = "Create Image on DeepAI";
+    actions.appendChild(deepAILink);
+
     const searchLink = document.createElement("a");
     searchLink.href = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(keyword)}`;
     searchLink.target = "_blank";
     searchLink.textContent = "Similar Images";
     actions.appendChild(searchLink);
 
-    // Download button (direct image download)
+    const lensLink = document.createElement("a");
+    lensLink.href = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(url)}`;
+    lensLink.target = "_blank";
+    lensLink.textContent = "🔍 Google Lens";
+    actions.appendChild(lensLink);
+
     const downloadLink = document.createElement("a");
     downloadLink.href = url + "?auto=format&fit=crop&w=1920&q=90";
     downloadLink.download = keyword.replace(/\s+/g, "_") + ".jpg";
@@ -193,7 +232,6 @@
     downloadLink.textContent = "Download";
     actions.appendChild(downloadLink);
 
-    // Favorite toggle button (heart)
     const favBtn = document.createElement("span");
     favBtn.className = "fav-btn";
     favBtn.setAttribute("role", "button");
@@ -216,25 +254,60 @@
     actions.appendChild(favBtn);
 
     card.appendChild(actions);
-
     return card;
   }
 
-  // Render all wallpapers initially
   function renderWallpapers(list) {
     gallery.innerHTML = "";
+    if (list.length === 0) {
+      gallery.innerHTML = "<p style='text-align:center;color:#888;'>No wallpapers found.</p>";
+      return;
+    }
     list.forEach(([url, keyword]) => {
       gallery.appendChild(createWallpaperCard(url, keyword));
     });
   }
 
+  // Initial render
   renderWallpapers(wallpapers);
 
-  // Search form behavior: open Google Images search for query in new tab
+  // View Favorites
+  viewFavsBtn.addEventListener("click", () => {
+    const favs = JSON.parse(localStorage.getItem("favWallpapers") || "[]");
+    const filtered = wallpapers.filter(([url]) => favs.includes(url));
+    renderWallpapers(filtered);
+    showAllBtn.style.display = "inline-block";
+    if (filtered.length === 0) {
+      gallery.innerHTML = "<p style='text-align:center;color:#888;'>No favorites yet.</p>";
+    }
+  });
+
+  // Show All
+  showAllBtn.addEventListener("click", () => {
+    renderWallpapers(wallpapers);
+    showAllBtn.style.display = "none";
+    searchInput.value = "";
+  });
+
+  // Client-side search/filter
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+    const filtered = wallpapers.filter(([url, keyword]) =>
+      keyword.toLowerCase().includes(query)
+    );
+    renderWallpapers(filtered);
+    showAllBtn.style.display = query ? "inline-block" : "none";
+    if (filtered.length === 0) {
+      gallery.innerHTML = "<p style='text-align:center;color:#888;'>No wallpapers found.</p>";
+    }
+  });
+
+  // Search form (Google Images)
   document.getElementById("searchForm").addEventListener("submit", e => {
     e.preventDefault();
-    const query = document.getElementById("searchInput").value.trim();
+    const query = searchInput.value.trim();
     if (query) {
+      localStorage.setItem("lastSearch", query);
       window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`, "_blank");
     }
   });
